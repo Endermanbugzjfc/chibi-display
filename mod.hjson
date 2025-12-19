@@ -1,0 +1,6 @@
+name: "chibi-display"
+displayName: "chibi display"
+author: "あざみ"
+version: "1.0"
+minGameVersion: "136"
+hidden: true
