@@ -4,3 +4,4 @@ author: "あざみ"
 version: "1.0"
 minGameVersion: "136"
 hidden: true
+description: ​操作中にSDキャラを表示する機能を追加
