@@ -16,7 +16,8 @@ function loadTex(name, defValue){
 }
 
 Events.run(ClientLoadEvent, e => {
-    Vars.content.units().each(u => {
+    Seq.withArrays(Vars.content.units(), Vars.content.blocks().select(b => b instanceof Turret || b == Blocks.router))
+    .each(u => {
         let mainTex = loadTex(u.name);
         if(mainTex){
             textures[u] = {
@@ -38,6 +39,9 @@ Events.run(ClientLoadEvent, e => {
             let width = Math.min(Scl.scl(300), Core.graphics.getWidth()/2);
             if(!Vars.player.dead()){
                 let next = Vars.player.unit().type;
+                if(next == UnitTypes.block){
+                    next = Vars.player.unit().tile().block;
+                }
                 if(lastType != next){
                     fade = Mathf.approachDelta(fade, 0, 0.04);
                     if(fade <= 0.01){
@@ -97,4 +101,3 @@ Events.run(ClientLoadEvent, e => {
     elem.touchable = Touchable.disabled;
     Core.app.post(() => Vars.ui.hudGroup.addChildAt(0, elem));
 })
-
