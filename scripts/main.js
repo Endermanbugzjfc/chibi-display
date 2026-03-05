@@ -8,23 +8,33 @@ let lastTex = undefined;
 function loadTex(name, defValue){
     let file = Vars.tree.get("chibis/" + name + ".png");
     if(file.exists()){
-        let tex = new Texture(file);
-        tex.setFilter(Texture.TextureFilter.linear);
+        let tex = new Texture(file, true);
+        tex.setFilter(Texture.TextureFilter.mipMapLinearLinear, Texture.TextureFilter.linear);
         return tex;
     }
     return defValue;
 }
 
+function loadAll(name){
+    let mainTex = loadTex(name);
+    if(mainTex){
+        return {
+            main: mainTex,
+            mining: loadTex(name + "-mining", mainTex),
+            building: loadTex(name + "-building", mainTex),
+            shooting: loadTex(name + "-shooting", mainTex),
+        };
+    }
+}
+
 Events.run(ClientLoadEvent, e => {
     Seq.withArrays(Vars.content.units(), Vars.content.blocks().select(b => b instanceof Turret || b == Blocks.router))
     .each(u => {
-        let mainTex = loadTex(u.name);
-        if(mainTex){
+        let main = loadAll(u.name);
+        if(main){
             textures[u] = {
-                main: mainTex,
-                mining: loadTex(u.name + "-mining", mainTex),
-                building: loadTex(u.name + "-building", mainTex),
-                shooting: loadTex(u.name + "-shooting", mainTex),
+                def: main,
+                summer: loadAll(u.name + "-summer")
             };
         }
     });
@@ -67,7 +77,11 @@ Events.run(ClientLoadEvent, e => {
 	        }
 	        
 	        if(lastType && textures[lastType] && Vars.state.isGame()){
-                let data = textures[lastType];
+                let isSummer = Vars.indexer.isBlockPresent(Blocks.sand) && Vars.indexer.isBlockPresent(Blocks.sandWater) && !Vars.indexer.isBlockPresent(Blocks.ice) && !Vars.indexer.isBlockPresent(Blocks.snow) && 
+                    (Vars.indexer.isBlockPresent(Blocks.water) || Vars.indexer.isBlockPresent(Blocks.deepWater));
+
+                let mainData = textures[lastType];
+                let data = (isSummer ? mainData.summer : mainData.def) || mainData.def;
                 let unit = Vars.player.unit();
 
                 let mainTex = 
@@ -86,7 +100,7 @@ Events.run(ClientLoadEvent, e => {
 
                 let conf = config[lastType] || {}
                 let fin = Interp.swingOut.apply(fade);
-                let hOffset = 0;
+                let hOffset = config.anchor ? 0 : 0.02;
 	            let tex = Draw.wrap(mainTex);
 	            let height = width * tex.height / tex.width;
                 let squishFactor = 0.2 * squish + Mathf.sin(Time.time, 20, 0.01);
