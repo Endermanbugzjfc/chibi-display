@@ -88,7 +88,7 @@ Events.run(ClientLoadEvent, e => {
                     Vars.player.dead() ? data.main : 
                     (
                         unit.mining() ? data.mining :
-                        unit.isBuilding() ? data.building :
+                        unit.activelyBuilding() ? data.building :
                         unit.isShooting ? data.shooting :
                         data.main
                     );
